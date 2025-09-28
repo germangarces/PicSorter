@@ -1,6 +1,19 @@
 # PicSorter
 A simple Rust command-line tool that organizes your images into folders based on their creation date.
 
+## How to run
+
+```bash
+Usage: pic-sorter <DIRECTORY>
+
+Arguments:
+  <DIRECTORY>  
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
+```
+
 ## Cross-compile for Windows to macOS
 
 1. Add the Windows target:
