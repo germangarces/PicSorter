@@ -1,20 +1,12 @@
+use chrono::{DateTime, Datelike, Utc};
 use clap::Parser;
 use std::path::Path;
-use std::{fs, error::Error};
-use chrono::{DateTime, Utc, Datelike};
+use std::{error::Error, fs, fs::Metadata};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Args {
     directory: String,
-}
-
-fn is_image(file: &fs::DirEntry) -> bool {
-    let path = file.path();
-    let extension = path.extension().unwrap_or_default().to_str().unwrap_or_default();
-    let image_extensions = ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp", "heic", "heif"];
-
-    image_extensions.contains(&extension)
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -25,11 +17,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     let files = directory.read_dir()?;
     for file in files {
         let file = file?;
-        if is_image(&file) {
-            let attr = fs::metadata(&file.path())?;
+        if file.path().is_file() {
+            let attr: Metadata = fs::metadata(&file.path())?;
             let created: DateTime<Utc> = attr.created()?.into();
-            let year = created.year().to_string();
-            
+            let modified: DateTime<Utc> = attr.modified()?.into();
+            // Windows uses created or modified date, so we need to check which one is older.
+            let year: String = if created < modified {
+                created.year().to_string()
+            } else {
+                modified.year().to_string()
+            };
+
             let new_path = directory.join(&year);
 
             println!("Moving {} to {}", file.path().display(), new_path.display());
